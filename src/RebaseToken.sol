@@ -38,6 +38,14 @@ contract RebaseToken is ERC20 {
         _mint(_to, _amount);
     }
 
+
+function burn(address _from, uint256 _amount) external {
+    _mintAccruedInterest(_from);
+    _burn(_from, _amount);
+}
+
+
+
     function balanceOf(address _user) public view override returns (uint256) {
         return super.balanceOf(_user) * _calculateUserAccumulatedInterestSincelastUpdate(_user) / PRECISION_FACTOR;
     }
@@ -52,8 +60,18 @@ contract RebaseToken is ERC20 {
     }
 
     function _mintAccruedInterest(address _user) internal {
-        //find the current balacne of rebse tokens that have been minted to user-> principle
-        s_userLastUpdatedTimeStamp[_user] = block.timestamp;
+uint256 previousPrincipleBalance = super.balanceOf(_user);
+uint256 currentBalance = balanceOf(_user);
+
+uint256 balanceIncrease = currentBalance - previousPrincipleBalance;
+
+
+s_userLastUpdatedTimeStamp[_user] = block.timestamp;
+_mint(_user, balanceIncrease);
+     
+
+
+
     }
 
     /*
