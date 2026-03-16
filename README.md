@@ -11,4 +11,4 @@ that represents their underlying balance
 - individually set an interst rate or each user based on some global interest rate of
 the protocol at the time the user deposits into the vault.
 - This global interest can only decrease to incetisive/reward early adopters.
-- increase token adoption
+- increase token adoption# ccip-rebase-token
