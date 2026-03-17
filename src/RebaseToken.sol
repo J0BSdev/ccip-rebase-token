@@ -3,6 +3,8 @@
 pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 /*
 *title: RebaseToken
@@ -11,25 +13,36 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 * @notice
 */
 
-contract RebaseToken is ERC20 {
+contract RebaseToken is ERC20, Ownable, AccessControl {
     error RebaseToken__InterestRateCanOnlyDecrease(uint256 oldInterestRate, uint256 newInterestRate);
 
     uint256 private constant PRECISION_FACTOR = 1e18;
+    bytes32 private constant MINT_AND_BURN_ROLE = keccak256("MINT_AND_BURN_ROLE");
     uint256 private s_interestRate = 5e10;
     mapping(address => uint256) private s_userInterestRate;
     mapping(address => uint256) private s_userLastUpdatedTimeStamp;
 
     event InterestRateSet(uint256 newInterestRate);
 
-    constructor() ERC20("RebaseToken", "RBK") {}
+    constructor() ERC20("RebaseToken", "RBK") Ownable(msg.sender) {}
 
-    function setInterestRate(uint256 _newInterestRate) external {
+
+
+    function grantMintAndBurnRole(address _account) external onlyOwner {
+        _grantRole(MINT_AND_BURN_ROLE, _account);
+    }
+
+    function setInterestRate(uint256 _newInterestRate) external onlyOwner {
         //set the new interest rate
         if (_newInterestRate > s_interestRate) {
             revert RebaseToken__InterestRateCanOnlyDecrease(s_interestRate, _newInterestRate);
         }
         s_interestRate = _newInterestRate;
         emit InterestRateSet(_newInterestRate);
+    }  
+
+    function pricipleBalanceOf(address _user) external view returns (uint256) {
+        return super.balanceOf(_user);
     }
 
     function mint(address _to, uint256 _amount) external {
@@ -107,6 +120,12 @@ _mint(_user, balanceIncrease);
 
 
 
+    }
+
+
+
+    function getInterestRate() external view returns (uint256) {
+        return s_interestRate;
     }
 
     /*
