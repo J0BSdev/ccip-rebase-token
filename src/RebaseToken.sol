@@ -53,6 +53,17 @@ function burn(address _from, uint256 _amount) external {
         return super.balanceOf(_user) * _calculateUserAccumulatedInterestSincelastUpdate(_user) / PRECISION_FACTOR;
     }
 
+
+function transfer(address _recipient, uint256 _amount) public override returns (bool) {
+    _mintAccruedInterest(msg.sender);
+    _mintAccruedInterest(_recipient);
+   if (_amount ==type(uint256).max) {
+    _amount = balanceOf(msg.sender);
+   }
+  if (balanceOf(_recipient) == 0) {
+    s_userInterestRate[_recipient] = s_userInterestRate[msg.sender];
+  }
+}
     function _calculateUserAccumulatedInterestSincelastUpdate(address _user)
         internal
         view
