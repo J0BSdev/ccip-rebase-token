@@ -45,14 +45,14 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
         return super.balanceOf(_user);
     }
 
-    function mint(address _to, uint256 _amount) external {
+    function mint(address _to, uint256 _amount) external onlyRole(MINT_AND_BURN_ROLE) {
         _mintAccruedInterest(_to);
         s_userInterestRate[_to] = s_interestRate;
         _mint(_to, _amount);
     }
 
 
-function burn(address _from, uint256 _amount) external {
+function burn(address _from, uint256 _amount) external onlyRole(MINT_AND_BURN_ROLE) {
     if (_amount == type(uint256).max) {
         _amount = balanceOf(_from);
     }
