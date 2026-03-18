@@ -6,7 +6,8 @@ import {RebaseToken} from "../src/RebaseToken.sol";
 import {console2} from "forge-std/console2.sol";
 import {Vault} from "../src/Vault.sol";
 import{IRebaseToken} from "../src/interfaces/IRebaseToken.sol";
-
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IAccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 
 contract RebaseTokenTest is Test{
@@ -81,7 +82,7 @@ function testRedeemStraigthAway(uint256 amount)public{
 
 
 function testRedeemAfterTimePassed(uint256 depositAmount , uint256 time)public{
-    time = bound(time , 1000, type(uint96).max);
+    time = bound(time , 1000, type(uint96).max);// maximum time of 2.5 * 10^21 years!!
     depositAmount = bound(depositAmount , 1e5, type(uint96).max);
     //1. deposit
 
@@ -105,7 +106,55 @@ uint256 ethBalance = address(user).balance;
 assertEq(ethBalance, balanceAfterSomeTime);
 assertGt(ethBalance, depositAmount);
 }
+
+
+function testTransfer(uint256 amount,uint256 amountToSend)public{
+    amount = bound(amount , 1e5 + 1e5, type(uint96).max);
+    amountToSend = bound(amountToSend , 1e5, amount - 1e5);
+    //1. deposit
+    vm.prank(user);
+    vm.deal(user, amount);
+    vault.deposit{value: amount}();
+
+    address user2 = makeAddr("user2");
+    uint256 userBalance = rebaseToken.balanceOf(user);
+    uint256 user2Balance = rebaseToken.balanceOf(user2);
+    assertEq(userBalance, amount);
+    assertEq(user2Balance, 0);
+
+
+//owner reduces the interest rate
+vm.prank(owner);
+rebaseToken.setInterestRate(4e10);
+
+    //2. transfer
+    vm.prank(user);
+    rebaseToken.transfer(user2, amountToSend);
+    uint256 userBalanceAfterTransfer = rebaseToken.balanceOf(user);
+    uint256 user2BalanceAfterTransfer = rebaseToken.balanceOf(user2);
+    assertEq(userBalanceAfterTransfer, userBalance - amountToSend);
+    assertEq(user2BalanceAfterTransfer, amountToSend);
+   
+    //check the user interest rate has been inherited(5e10 not 4e10 )
+    assertEq(rebaseToken.getUserInterestRate(user), 5e10);
+    assertEq(rebaseToken.getUserInterestRate(user2), 5e10);
+   
 }
 
+function testCannotSetInterestRate(uint256 newInterestRate)public{
+    vm.prank(user);
+    vm.expectPartialRevert(bytes4(Ownable.OwnableUnauthorizedAccount.selector));
+    rebaseToken.setInterestRate(newInterestRate);
 
+}
+
+function testCannotCallMintAndBurn()public{
+    vm.prank(user);
+    vm.expectPartialRevert(bytes4(IAccessControl.AccessControlUnauthorizedAccount.selector));
+    rebaseToken.mint(user, 100);
+    vm.expectPartialRevert(bytes4(IAccessControl.AccessControlUnauthorizedAccount.selector));
+    rebaseToken.burn(user, 100);
+}
+
+}
 
