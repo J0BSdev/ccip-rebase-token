@@ -42,6 +42,9 @@ function deposit() external payable {
 */
 
 function redeem(uint256 _amount)external {
+    if (_amount == type(uint256).max) {
+        _amount = IRebaseToken(i_rebaseToken).balanceOf(msg.sender);
+    }
     //1. burn tokens from the user
     IRebaseToken(i_rebaseToken).burn(msg.sender, _amount);
     //2. send the user ETH
