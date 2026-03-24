@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {TokenPool} from "@ccip/contracts/pools/TokenPool.sol";
-import {Pool} from "@ccip/contracts/pools/lib/Pool.sol";
+import {Pool} from "@ccip/contracts/pools/lib/Pool.sol"; 
 
 contract RebaseTokenPool is TokenPool {
     constructor(IERC20 _token, address [] memory _allowlist, address _rnmProxy , address _router) 
@@ -13,5 +13,5 @@ contract RebaseTokenPool is TokenPool {
 function lockOrBurn(Pool.LockOrBurnInV1 calldata lockOrBurn) external override {
 
 
-
+}
 }
