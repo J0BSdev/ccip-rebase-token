@@ -13,5 +13,5 @@ contract RebaseTokenPool is TokenPool {
 function lockOrBurn(Pool.LockOrBurnInV1 calldata lockOrBurn) external override {
 
 
-
+}
 }
