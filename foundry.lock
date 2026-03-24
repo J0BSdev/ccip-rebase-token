@@ -1,4 +1,7 @@
 {
+  "lib/chainlink-ccip": {
+    "rev": "d819cb3228e118b7f8e62de64d59975ab1c60594"
+  },
   "lib/forge-std": {
     "tag": {
       "name": "v1.15.0",
